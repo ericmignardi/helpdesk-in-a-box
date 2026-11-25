@@ -153,14 +153,14 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 2.4 Password and lockout policy
 
-- [ ] Group Policy Management → Default Domain Policy → **Edit** → Computer Config → Policies → Windows Settings → Security Settings → Account Policies
+- [*] Group Policy Management → Default Domain Policy → **Edit** → Computer Config → Policies → Windows Settings → Security Settings → Account Policies
   - **Password Policy:** minimum length **12**, complexity **Enabled**, maximum age **90 days**
   - **Account Lockout Policy:** threshold **5**, duration **15 min**, reset counter after **15 min**
-- [ ] Run `gpupdate /force` on DC01
+- [*] Run `gpupdate /force` on DC01
 - ✔ `net accounts /domain` shows the new values
 - 📸 `p2-06-password-lockout-policy.png`
-- [ ] Shut down → **Snapshot: `DC01-ad-ready`**. Delete `DC01-clean-os` if you need the space.
-- [ ] `git push`
+- [*] Shut down → **Snapshot: `DC01-ad-ready`**. Delete `DC01-clean-os` if you need the space.
+- [*] `git push`
 
 ---
 
