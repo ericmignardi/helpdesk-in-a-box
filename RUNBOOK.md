@@ -168,8 +168,8 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 3.1 DHCP on DC01
 
-- [ ] Add roles → **DHCP Server** → Install → **Complete DHCP configuration** (this authorizes it in AD)
-- [ ] DHCP console → IPv4 → **New Scope** `Bayview-LAN`:
+- [*] Add roles → **DHCP Server** → Install → **Complete DHCP configuration** (this authorizes it in AD)
+- [*] DHCP console → IPv4 → **New Scope** `Bayview-LAN`:
   - Range `10.10.10.100` to `10.10.10.199`, mask `/24`
   - Exclusions: none. Lease: 8 days.
   - Router (003): `10.10.10.2` · DNS (006): `10.10.10.10` · Domain name (015): `bayview.internal`
@@ -178,26 +178,26 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 3.2 Create CLIENT01
 
-- [ ] New VM → Typical → install OS later → **Windows 11 x64**
-- [ ] **Encryption** (required for Windows 11's TPM): choose **"Only the files needed to support a TPM are encrypted"**. Save the encryption password in your password manager. You'll need it if you ever move the VM.
-- [ ] Name `CLIENT01`, disk **64 GB** (growable by default), single file, Memory **4 GB**, CPUs **2**, Network **NAT**, ISO = Windows 11 Enterprise eval
-- [ ] Install Windows 11. At sign-in, choose **Sign-in options → Domain join instead** to create a local account (`localadmin`).
-- [ ] Install VMware Tools, reboot
+- [*] New VM → Typical → install OS later → **Windows 11 x64**
+- [*] **Encryption** (required for Windows 11's TPM): choose **"Only the files needed to support a TPM are encrypted"**. Save the encryption password in your password manager. You'll need it if you ever move the VM.
+- [*] Name `CLIENT01`, disk **64 GB** (growable by default), single file, Memory **4 GB**, CPUs **2**, Network **NAT**, ISO = Windows 11 Enterprise eval
+- [*] Install Windows 11. At sign-in, choose **Sign-in options → Domain join instead** to create a local account (`localadmin`).
+- [*] Install VMware Tools, reboot
 - ✔ `ipconfig /all` shows an IP between `.100` and `.199`, DNS server `10.10.10.10` and suffix `bayview.internal`. **This proves DHCP works.**
 - ✔ `nslookup dc01.bayview.internal` works from CLIENT01
 - 📸 `p3-02-client-dhcp-lease.png` (client `ipconfig /all` + the DC's Address Leases view)
 
 ### 3.3 Join the domain
 
-- [ ] Rename the PC to `CLIENT01`, reboot
-- [ ] Settings → System → About → **Domain or workgroup** → Domain: `bayview.internal` → credentials `BAYVIEW\adm-emignardi` → reboot
+- [*] Rename the PC to `CLIENT01`, reboot
+- [*] Settings → System → About → **Domain or workgroup** → Domain: `bayview.internal` → credentials `BAYVIEW\adm-emignardi` → reboot
   - (PowerShell equivalent you should know: `Add-Computer -DomainName bayview.internal -Credential BAYVIEW\adm-emignardi -Restart`)
-- [ ] On DC01, move `CLIENT01` from the default **Computers** container into `Bayview\Computers\Workstations`
-- [ ] Log in to CLIENT01 as `BAYVIEW\schen`
+- [*] On DC01, move `CLIENT01` from the default **Computers** container into `Bayview\Computers\Workstations`
+- [*] Log in to CLIENT01 as `BAYVIEW\schen`
 - ✔ `whoami` → `bayview\schen` · `echo %LOGONSERVER%` → `\\DC01`
 - 📸 `p3-03-domain-joined.png`
-- [ ] Shut down both VMs → **Snapshot: `CLIENT01-joined`**
-- [ ] `git push`
+- [*] Shut down both VMs → **Snapshot: `CLIENT01-joined`**
+- [*] `git push`
 
 ---
 
