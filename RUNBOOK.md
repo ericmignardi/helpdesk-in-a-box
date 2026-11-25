@@ -105,12 +105,12 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 2.1 Promote to domain controller
 
-- [ ] Server Manager → **Add roles and features** → **Active Directory Domain Services** → Install
-- [ ] Click the flag → **Promote this server to a domain controller**
+- [*] Server Manager → **Add roles and features** → **Active Directory Domain Services** → Install
+- [*] Click the flag → **Promote this server to a domain controller**
   - **Add a new forest** → Root domain: `bayview.internal`
   - Functional levels: leave the defaults. Check DNS server. Set a DSRM password and save it.
   - NetBIOS name: `BAYVIEW`
-- [ ] Review → Install. The server reboots.
+- [*] Review → Install. The server reboots.
 - ✔ The login screen shows `BAYVIEW\Administrator`
 - 📸 `p2-01-promotion-complete.png` (Server Manager showing AD DS and DNS)
 
@@ -118,10 +118,10 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 2.2 DNS
 
-- [ ] Check DC01's IPv4 DNS settings now show **Preferred: `10.10.10.10`**, **Alternate: `127.0.0.1`**. Fix them if not.
-- [ ] DNS Manager → DC01 → Properties → **Forwarders** → add `10.10.10.2`
-- [ ] Create a **Reverse Lookup Zone**: Primary, AD-integrated, IPv4, network ID `10.10.10`
-- [ ] In the forward zone, open the `DC01` A record and tick **Update associated PTR record**
+- [*] Check DC01's IPv4 DNS settings now show **Preferred: `10.10.10.10`**, **Alternate: `127.0.0.1`**. Fix them if not.
+- [*] DNS Manager → DC01 → Properties → **Forwarders** → add `10.10.10.2`
+- [*] Create a **Reverse Lookup Zone**: Primary, AD-integrated, IPv4, network ID `10.10.10`
+- [*] In the forward zone, open the `DC01` A record and tick **Update associated PTR record**
 - ✔ `nslookup dc01.bayview.internal` returns `.10`
 - ✔ `nslookup 10.10.10.10` returns `dc01.bayview.internal`
 - ✔ `nslookup microsoft.com` works (through the forwarder)
@@ -129,10 +129,10 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 2.3 OUs, groups and accounts (Active Directory Users and Computers)
 
-- [ ] Turn on **View → Advanced Features** (handy later)
-- [ ] Create the OU tree from the README: `Bayview` → `Users` (Office, Production, Shipping, Management, IT), `Computers` (Workstations), `Groups`, `Service Accounts`, `Admin Accounts`, `Disabled Users`
-- [ ] In `Bayview\Groups`, create **Global Security** groups: `GG-Office`, `GG-Production`, `GG-Shipping`, `GG-Management`, `GG-IT`
-- [ ] Create users (fill in **First name, Last name, Display name, Job title and Department**; set an initial password; untick "must change password" for now so you can test easily):
+- [*] Turn on **View → Advanced Features** (handy later)
+- [*] Create the OU tree from the README: `Bayview` → `Users` (Office, Production, Shipping, Management, IT), `Computers` (Workstations), `Groups`, `Service Accounts`, `Admin Accounts`, `Disabled Users`
+- [*] In `Bayview\Groups`, create **Global Security** groups: `GG-Office`, `GG-Production`, `GG-Shipping`, `GG-Management`, `GG-IT`
+- [*] Create users (fill in **First name, Last name, Display name, Job title and Department**; set an initial password; untick "must change password" for now so you can test easily):
 
 | User          | Username  | OU         | Group         | Title                  |
 | ------------- | --------- | ---------- | ------------- | ---------------------- |
@@ -144,10 +144,10 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 | Tom Bergeron  | tbergeron | Shipping   | GG-Shipping   | Shipping Coordinator   |
 | Eric Mignardi | emignardi | IT         | GG-IT         | IT Support             |
 
-- [ ] Create a **Shipping template** account `_tmpl-shipping` (disabled, member of GG-Shipping, Department and Company filled in). You'll copy it in BAY-001.
-- [ ] In `Admin Accounts`: `adm-emignardi` → member of **Domain Admins**. From now on, do admin work as this account, not Administrator.
-- [ ] In `Service Accounts`: `svc-osticket` → standard user (Domain Users only), **Password never expires** ✓, **User cannot change password** ✓, with a long random password saved in your password manager
-- [ ] Optional but good: run `Get-ADUser -Filter * -SearchBase "OU=Bayview,DC=bayview,DC=internal" | Select Name,SamAccountName,Enabled` in PowerShell
+- [*] Create a **Shipping template** account `_tmpl-shipping` (disabled, member of GG-Shipping, Department and Company filled in). You'll copy it in BAY-001.
+- [*] In `Admin Accounts`: `adm-emignardi` → member of **Domain Admins**. From now on, do admin work as this account, not Administrator.
+- [*] In `Service Accounts`: `svc-osticket` → standard user (Domain Users only), **Password never expires** ✓, **User cannot change password** ✓, with a long random password saved in your password manager
+- [*] Optional but good: run `Get-ADUser -Filter * -SearchBase "OU=Bayview,DC=bayview,DC=internal" | Select Name,SamAccountName,Enabled` in PowerShell
 - ✔ Log off and log in as `BAYVIEW\adm-emignardi`
 - 📸 `p2-03-ou-structure.png` · `p2-04-users.png` · `p2-05-groups.png`
 
