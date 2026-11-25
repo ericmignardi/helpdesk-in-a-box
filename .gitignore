@@ -1,0 +1,6 @@
+# Secrets and local-only files: never commit
+.env
+plugins/*.phar
+certs/*.crt
+certs/*.cer
+*.log
