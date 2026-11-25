@@ -205,10 +205,10 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 4.1 Company file share (on DC01)
 
-- [ ] Create `C:\Shares\Company` with subfolders `Office`, `Production`, `Shipping`, `Management`
-- [ ] Share `Company` as `Company`. Share permissions: **Authenticated Users: Change** (NTFS does the real control).
-- [ ] NTFS on `Company`: disable inheritance (convert), remove `Users`, keep `SYSTEM` + `Administrators` Full. Add **Domain Users: Read & execute** on _this folder only_.
-- [ ] NTFS on each department subfolder: add that department's group with **Modify**. On `Management`, **only** GG-Management (and admins).
+- [*] Create `C:\Shares\Company` with subfolders `Office`, `Production`, `Shipping`, `Management`
+- [*] Share `Company` as `Company`. Share permissions: **Authenticated Users: Change** (NTFS does the real control).
+- [*] NTFS on `Company`: disable inheritance (convert), remove `Users`, keep `SYSTEM` + `Administrators` Full. Add **Domain Users: Read & execute** on _this folder only_.
+- [*] NTFS on each department subfolder: add that department's group with **Modify**. On `Management`, **only** GG-Management (and admins).
 - ✔ Test from CLIENT01 as `schen`: she can create a file in `Office`, can't create one in `Production`, and gets **Access denied** on `Management`
 - 📸 `p4-01-ntfs-management.png` (Advanced Security on Management) · `p4-02-access-test.png`
 
@@ -216,7 +216,7 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 4.2 GPO: drive maps (`BAY-U-DriveMaps` → link to `Bayview\Users`)
 
-- [ ] User Config → Preferences → Windows Settings → **Drive Maps** → New:
+- [*] User Config → Preferences → Windows Settings → **Drive Maps** → New:
   - **S:** `\\DC01\Company`, Action **Update**, Label `Company`
   - **M:** `\\DC01\Company\Management`, Action **Update** → Common tab → **Item-level targeting** → Security Group = `BAYVIEW\GG-Management`
 - ✔ On CLIENT01: log in as `schen` → S: present, M: absent. Log in as `kwalsh` → both.
@@ -225,14 +225,14 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 4.3 GPO: screen lock (`BAY-U-Desktop` → link to `Bayview\Users`)
 
-- [ ] User Config → Policies → Admin Templates → Control Panel → Personalization: **Enable screen saver**, **Password protect the screen saver**, **Screen saver timeout = 600**
-- ✔ After `gpupdate /force` and a re-logon, the screen locks after 10 minutes
+- [*] User Config → Policies → Admin Templates → Control Panel → Personalization: **Enable screen saver**, **Password protect the screen saver**, **Screen saver timeout = 600**, **Force specific screen saver = `scrnsave.scr`** (without it, Windows 11 has no screen saver selected and the timeout does nothing)
+- ✔ After `gpupdate /force` and a re-logon, Settings → Personalization → Lock screen → Screen saver shows **Blank, 10 minutes**, greyed out (controlled by policy)
 
 ### 4.4 Print server + GPO printer
 
-- [ ] On DC01: Add roles → **Print and Document Services** → Print Server
-- [ ] Print Management → Printers → **Add Printer** → new TCP/IP port `10.10.10.50` (it will say the device isn't found: choose **Generic Network Card** / continue) → driver **Generic / Text Only** → name `Office-Copier`, share as `Office-Copier`, location `Office`
-- [ ] GPO `BAY-U-Printers` → link to `Bayview\Users` → User Config → Preferences → Control Panel Settings → **Printers** → New **Shared Printer** → `\\DC01\Office-Copier`, Action **Update** → item-level targeting: group `GG-Office` **OR** `GG-Management`
+- [*] On DC01: Add roles → **Print and Document Services** → Print Server
+- [*] Print Management → Printers → **Add Printer** → new TCP/IP port `10.10.10.50` (it will say the device isn't found: choose **Generic Network Card** / continue) → driver **Generic / Text Only** → name `Office-Copier`, share as `Office-Copier`, location `Office`
+- [*] GPO `BAY-U-Printers` → link to `Bayview\Users` → User Config → Preferences → Control Panel Settings → **Printers** → New **Shared Printer** → `\\DC01\Office-Copier`, Action **Update** → item-level targeting: group `GG-Office`, then a second item `GG-Management` with **Item Options → Or** (the default is And)
 - ✔ As `schen` on CLIENT01, `Office-Copier` shows in Printers & scanners. As `drossi` (Production), it doesn't.
 - 📸 `p4-04-print-management.png` · `p4-05-printer-on-client.png`
 
@@ -240,11 +240,11 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 4.5 GPO: software deployment (`BAY-C-Software` → link to `Bayview\Computers\Workstations`)
 
-- [ ] On DC01: create `C:\Shares\Software`, share it as `Software$` (the `$` hides it). Share: Authenticated Users **Read**. NTFS: **Domain Computers: Read** (the computer account installs it at startup).
-- [ ] Download the latest **7-Zip x64 .msi** from 7-zip.org into `Software$`
-- [ ] **Don't link the GPO yet.** BAY-008 is the ticket where you deploy it. For now, create the GPO and leave it unlinked.
-- [ ] Shut down both VMs → **Snapshot DC01: `DC01-services-ready`** (delete the oldest DC01 snapshot so you stay at 2)
-- [ ] `git push`
+- [*] On DC01: create `C:\Shares\Software`, share it as `Software$` (the `$` hides it). Share: Authenticated Users **Read**. NTFS: **Domain Computers: Read** (the computer account installs it at startup).
+- [*] Download the latest **7-Zip x64 .msi** from 7-zip.org into `Software$`
+- [*] **Don't link the GPO yet.** BAY-008 is the ticket where you deploy it. For now, create the GPO and leave it unlinked.
+- [*] Shut down both VMs → **Snapshot DC01: `DC01-services-ready`** (delete the oldest DC01 snapshot so you stay at 2)
+- [*] `git push`
 
 ---
 
