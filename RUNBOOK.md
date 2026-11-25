@@ -67,36 +67,37 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 1.1 Create the VM
 
-- [ ] VMware: **File → New Virtual Machine → Typical**
-- [ ] **"I will install the operating system later"**
-- [ ] Guest OS: **Microsoft Windows → Windows Server 2025** (if it isn't listed, pick Windows Server 2022)
-- [ ] Name: `DC01`. Location: your VMs folder (keep it out of OneDrive).
-- [ ] Disk: **60 GB**. Leave **"Allocate all disk space now" unticked** (thin). Choose "Store virtual disk as a single file".
-- [ ] **Customize Hardware:** Memory **4 GB**, Processors **2**, Network **NAT**, CD/DVD → **Use ISO image** → your Server 2025 ISO
-- [ ] Remove the sound card and printer (they aren't needed on a server)
+- [*] VMware: **File → New Virtual Machine → Typical**
+- [*] **"I will install the operating system later"**
+- [*] Guest OS: **Microsoft Windows → Windows Server 2025** (if it isn't listed, pick Windows Server 2022)
+- [*] Name: `DC01`. Location: your VMs folder (keep it out of OneDrive).
+- [*] Disk: **60 GB**, "Store virtual disk as a single file". (The Typical wizard always makes a growable/thin disk, so there's no "allocate now" option.)
+  - ✔ After creating: VM → Settings → Hard Disk shows a current size of only a few MB, with a 60 GB maximum
+- [*] **Customize Hardware:** Memory **4 GB**, Processors **2**, Network **NAT**, CD/DVD → **Use ISO image** → your Server 2025 ISO
+- [*] Remove the sound card and printer (they aren't needed on a server)
 
 ### 1.2 Install Windows Server
 
-- [ ] Power on and press a key to boot from the DVD
-- [ ] Choose **Windows Server 2025 Standard Evaluation (Desktop Experience)**
-- [ ] Custom install → the unallocated drive → Next
-- [ ] Set a strong local Administrator password and save it in your password manager
-- [ ] Log in, then **VM → Install VMware Tools** and run setup from the D: drive. Reboot.
+- [*] Power on and press a key to boot from the DVD
+- [*] Choose **Windows Server 2025 Standard Evaluation (Desktop Experience)**
+- [*] Custom install → the unallocated drive → Next
+- [*] Set a strong local Administrator password and save it in your password manager
+- [*] Log in, then **VM → Install VMware Tools** and run setup from the D: drive. Reboot.
 - 📸 `p1-01-server-installed.png` (desktop showing Server Manager)
 
 ### 1.3 Basic config
 
-- [ ] Rename the computer to **DC01** (Settings → System → About → Rename this PC). Reboot.
-- [ ] Set the time zone to **(UTC-05:00) Eastern Time**
-- [ ] Set a static IP (ncpa.cpl → Ethernet0 → IPv4 Properties):
+- [*] Rename the computer to **DC01** (Settings → System → About → Rename this PC). Reboot.
+- [*] Set the time zone to **(UTC-05:00) Eastern Time**
+- [*] Set a static IP (ncpa.cpl → Ethernet0 → IPv4 Properties):
   - IP `10.10.10.10`, mask `255.255.255.0`, gateway `10.10.10.2`
   - Preferred DNS `10.10.10.2` for now (it changes after promotion)
-- [ ] Run Windows Update until no updates are left
+- [*] Run Windows Update until no updates are left
 - ✔ `ping 10.10.10.2` and `ping microsoft.com` both reply
 - ✔ `hostname` returns `DC01`
 - 📸 `p1-02-static-ip.png` (`ipconfig /all`)
-- [ ] Shut down → **Snapshot: `DC01-clean-os`**
-- [ ] `git push` (notes + screenshots)
+- [*] Shut down → **Snapshot: `DC01-clean-os`**
+- [*] `git push` (notes + screenshots)
 
 ---
 
@@ -179,7 +180,7 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 - [ ] New VM → Typical → install OS later → **Windows 11 x64**
 - [ ] **Encryption** (required for Windows 11's TPM): choose **"Only the files needed to support a TPM are encrypted"**. Save the encryption password in your password manager. You'll need it if you ever move the VM.
-- [ ] Name `CLIENT01`, disk **64 GB thin**, single file, Memory **4 GB**, CPUs **2**, Network **NAT**, ISO = Windows 11 Enterprise eval
+- [ ] Name `CLIENT01`, disk **64 GB** (growable by default), single file, Memory **4 GB**, CPUs **2**, Network **NAT**, ISO = Windows 11 Enterprise eval
 - [ ] Install Windows 11. At sign-in, choose **Sign-in options → Domain join instead** to create a local account (`localadmin`).
 - [ ] Install VMware Tools, reboot
 - ✔ `ipconfig /all` shows an IP between `.100` and `.199`, DNS server `10.10.10.10` and suffix `bayview.internal`. **This proves DHCP works.**
