@@ -184,7 +184,7 @@ Is the printer up for others? (Log in as `kwalsh`: it's there.) So it's user-spe
 
 <details><summary>Hint / expected approach</summary>
 
-On DC01: Print Management → Printers → `Office-Copier` → **Open Printer Queue**. The jobs show "Error" or are stuck. Test the device: `Test-NetConnection 192.168.X.50 -Port 9100` fails, so the **copier is offline**. Clear the stuck jobs (cancel them, or for a corrupt queue: `Stop-Service Spooler`, clear `C:\Windows\System32\spool\PRINTERS`, `Start-Service Spooler`; know this procedure). Since the device itself is down, **escalate** to the copier vendor (fictional "Lakeshore Office Systems") and tell Mike the ETA and a workaround (print to PDF and save to S:\Production). This ticket shows **escalation**, which the Zavasoft listing asks for. Remove Mike from GG-Office afterwards.
+On DC01: Print Management → Printers → `Office-Copier` → **Open Printer Queue**. The jobs show "Error" or are stuck. Test the device: `Test-NetConnection 10.10.10.50 -Port 9100` fails, so the **copier is offline**. Clear the stuck jobs (cancel them, or for a corrupt queue: `Stop-Service Spooler`, clear `C:\Windows\System32\spool\PRINTERS`, `Start-Service Spooler`; know this procedure). Since the device itself is down, **escalate** to the copier vendor (fictional "Lakeshore Office Systems") and tell Mike the ETA and a workaround (print to PDF and save to S:\Production). This ticket shows **escalation**, which the Zavasoft listing asks for. Remove Mike from GG-Office afterwards.
 </details>
 
 ---
@@ -223,7 +223,7 @@ Check that the software is approved and free for business use (7-Zip is, under t
 
 **User's words:** "Websites load fine, but the S: drive won't open, the copier's gone, and Windows keeps saying the domain isn't available."
 
-**Lab setup:** on CLIENT01 as `localadmin`, set the network adapter's DNS manually to **8.8.8.8** (simulating a contractor "fixing" the internet). Log in as `drossi` (cached credentials let him in). Submit the ticket as Dan from the portal at `http://192.168.X.1:8080`; it still loads because it's addressed by IP, not by name. (That's a clue in itself.)
+**Lab setup:** on CLIENT01 as `localadmin`, set the network adapter's DNS manually to **8.8.8.8** (simulating a contractor "fixing" the internet). Log in as `drossi` (cached credentials let him in). Submit the ticket as Dan from the portal at `http://10.10.10.1:8080`; it still loads because it's addressed by IP, not by name. (That's a clue in itself.)
 
 **Write-up**
 - **Diagnostic commands and output:** _…_
@@ -234,7 +234,7 @@ Check that the software is approved and free for business use (7-Zip is, under t
 
 <details><summary>Hint / expected approach</summary>
 
-`ipconfig /all`: DNS server is `8.8.8.8` instead of `192.168.X.10`. `nslookup dc01.bayview.internal` fails because public DNS knows nothing about your internal domain, while `ping 192.168.X.10` works, so the network is fine and **DNS** is the problem. Fix: set the adapter back to **"Obtain DNS server address automatically"**, `ipconfig /flushdns`, `ipconfig /renew`, and verify with `nslookup`, S:, and `gpupdate`. Root cause: a manually set DNS server. Prevention: standard users can't change adapter settings; remove local admin rights from anyone who doesn't need them. Classic interview line: *"it's always DNS."*
+`ipconfig /all`: DNS server is `8.8.8.8` instead of `10.10.10.10`. `nslookup dc01.bayview.internal` fails because public DNS knows nothing about your internal domain, while `ping 10.10.10.10` works, so the network is fine and **DNS** is the problem. Fix: set the adapter back to **"Obtain DNS server address automatically"**, `ipconfig /flushdns`, `ipconfig /renew`, and verify with `nslookup`, S:, and `gpupdate`. Root cause: a manually set DNS server. Prevention: standard users can't change adapter settings; remove local admin rights from anyone who doesn't need them. Classic interview line: *"it's always DNS."*
 </details>
 
 ---

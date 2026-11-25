@@ -33,12 +33,12 @@ flowchart LR
       OST["osTicket 1.18.4<br/>php:8.3-apache<br/>port 8080"]
       DB[("MariaDB 11.4")]
     end
-    subgraph NAT["VMware NAT network (VMnet8) 192.168.X.0/24"]
-      DC["DC01<br/>Windows Server 2025<br/>AD DS, DNS, DHCP, File, Print, AD CS<br/>192.168.X.10"]
+    subgraph NAT["VMware NAT network (VMnet8) 10.10.10.0/24"]
+      DC["DC01<br/>Windows Server 2025<br/>AD DS, DNS, DHCP, File, Print, AD CS<br/>10.10.10.10"]
       CL["CLIENT01<br/>Windows 11 Enterprise<br/>DHCP client"]
     end
   end
-  CL -- "browser to 192.168.X.1:8080" --> OST
+  CL -- "browser to 10.10.10.1:8080" --> OST
   OST --> DB
   OST -- "LDAP + StartTLS (389)" --> DC
   CL -- "DNS, Kerberos, SMB, Group Policy" --> DC
@@ -49,9 +49,9 @@ flowchart LR
 
 | Machine | Role | OS | vCPU / RAM / Disk (thin) | IP |
 |---|---|---|---|---|
-| DC01 | Domain controller, DNS, DHCP, file and print server, certificate authority | Windows Server 2025 Standard Evaluation (Desktop Experience) | 2 / 4 GB / 60 GB | 192.168.X.10 (static) |
+| DC01 | Domain controller, DNS, DHCP, file and print server, certificate authority | Windows Server 2025 Standard Evaluation (Desktop Experience) | 2 / 4 GB / 60 GB | 10.10.10.10 (static) |
 | CLIENT01 | Staff workstation | Windows 11 Enterprise Evaluation | 2 / 4 GB / 64 GB | DHCP (.100–.199) |
-| osTicket stack | Help desk | Docker Desktop on the host (`php:8.3-apache` + `mariadb:11.4`) | n/a | Host VMnet8 IP 192.168.X.1, port 8080 |
+| osTicket stack | Help desk | Docker Desktop on the host (`php:8.3-apache` + `mariadb:11.4`) | n/a | Host VMnet8 IP 10.10.10.1, port 8080 |
 
 **Virtualization:** VMware Workstation Pro on an ASUS TUF A15 (Ryzen 7 6800H, 16 GB RAM).
 
