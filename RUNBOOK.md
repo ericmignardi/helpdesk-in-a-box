@@ -252,9 +252,9 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 5.1 Start the stack (on the host, in this folder)
 
-- [ ] Make sure Docker Desktop is running
-- [ ] `copy .env.example .env`, then open `.env` and set two strong passwords. Check `DC_IP=10.10.10.10` and `LAB_HOST_IP=10.10.10.1`.
-- [ ] `docker compose up -d --build`
+- [*] Make sure Docker Desktop is running
+- [*] `copy .env.example .env`, then open `.env` and set two strong passwords. Check `DC_IP=10.10.10.10` and `LAB_HOST_IP=10.10.10.1`.
+- [*] `docker compose up -d --build`
   - The first run downloads `php:8.3-apache` and `mariadb:11.4` and builds the image (5–10 min)
 - ✔ `docker compose ps` shows `db` as **healthy** and `osticket` as **running**
 - ✔ `docker compose logs osticket` shows `entrypoint: new install, open .../setup/`
@@ -263,14 +263,14 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 5.2 Run the web installer
 
-- [ ] On the host, go to `http://10.10.10.1:8080/setup/` (`localhost` won't work: osTicket only listens on the lab adapter, on purpose)
-- [ ] Prerequisites: all required items green (screenshot this)
-- [ ] System settings:
+- [*] On the host, go to `http://10.10.10.1:8080/setup/` (`localhost` won't work: osTicket only listens on the lab adapter, on purpose)
+- [*] Prerequisites: all required items green (screenshot this)
+- [*] System settings:
   - Helpdesk name `Bayview IT Help Desk` · default email `helpdesk@bayview.internal`
   - Admin user: **`ostadmin`**, your own name, a strong password. This is your **break-glass** login if AD is down.
   - Database: MySQL hostname **`db`**, database **`osticket`**, username **`osticket`**, password = `DB_PASSWORD` from `.env`, table prefix `ost_`
-- [ ] Install Now → "Congratulations"
-- [ ] `docker compose restart osticket`
+- [*] Install Now → "Congratulations"
+- [*] `docker compose restart osticket`
 - ✔ The logs now show `osTicket installed, config locked, setup folder removed`
 - ✔ `http://10.10.10.1:8080/setup/` returns **Not Found**
 - ✔ **Security check:** from your phone on home Wi-Fi, `http://<laptop's Wi-Fi IP>:8080` should **not** load
@@ -278,21 +278,21 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 5.3 Reach it from CLIENT01
 
-- [ ] On CLIENT01, open Edge → `http://10.10.10.1:8080`
+- [*] On CLIENT01, open Edge → `http://10.10.10.1:8080`
 - ✔ The osTicket portal loads
 - If it times out, it's the **host's** Windows Firewall. On the host: Windows Defender Firewall → Advanced → **Inbound Rules → New Rule** → Port → TCP **8080** → Allow → all profiles → name `Lab osTicket 8080` → then open the rule → **Scope → Remote IP: `10.10.10.0/24`** only. This lets the lab VMs in without opening the port to everything.
 - 📸 `p5-03-portal-from-client.png`
 
-### 5.4 Configure the help desk (Staff Panel → Admin Panel, as `ostadmin`)
+### 5.4 Configure the help desk (host browser → `http://10.10.10.1:8080/scp/` → sign in as `ostadmin` → **Admin Panel**, top right)
 
-- [ ] **Agents → Departments:** rename `Support` to `IT Support`
-- [ ] **Manage → SLA:** `Standard` (grace 24 h, default) and `Urgent` (grace 4 h)
-- [ ] **Manage → Help Topics:** Account & Password, Access Request, New Hire / Offboarding, Hardware, Printer, Network & Connectivity, Software Request. All route to IT Support. Set **Account & Password** to the Urgent SLA.
-- [ ] **Agents → Canned Responses:** at least 4 (Password reset complete · Need more information · Request needs manager approval · Issue resolved, please confirm)
-- [ ] **Settings → Users:** require users to sign in before creating tickets (registration method: users sign in with their account)
-- ✔ Submit a test ticket from the portal and see it in the Staff Panel queue
+- [*] **Agents → Departments:** rename `Support` to `IT Support`
+- [*] **Manage → SLA:** `Standard` (grace 24 h, default) and `Urgent` (grace 4 h)
+- [*] **Manage → Help Topics:** Account & Password, Access Request, New Hire / Offboarding, Hardware, Printer, Network & Connectivity, Software Request. All route to IT Support. Set **Account & Password** to the Urgent SLA.
+- [*] **Agent Panel → Knowledgebase → Canned Responses** (not in the Admin Panel): at least 4 (Password reset complete · Need more information · Request needs manager approval · Issue resolved, please confirm)
+- [*] **Settings → Users:** require users to sign in before creating tickets (registration method: users sign in with their account)
+- ✔ On CLIENT01, submit a test ticket at `http://10.10.10.1:8080` and see it in the Agent Panel queue on the host
 - 📸 `p5-04-help-topics.png` · `p5-05-sla.png` · `p5-06-test-ticket.png`
-- [ ] `git push`
+- [*] `git push`
 
 > Menu names in 1.18 may differ slightly from this list. Screenshot what you actually see and match by meaning.
 
@@ -341,6 +341,10 @@ docker compose exec osticket ldapsearch -H ldap://dc01.bayview.internal -ZZ -x -
 > **This command is a great interview story:** "Before configuring the app, I proved the connection worked from inside the container with ldapsearch, so I knew any later problem was the app's config, not the network or certificates."
 
 ### 6.4 Install the LDAP plugin
+
+- [ ] **Prep: give every AD user an email address.** osTicket creates an account for each AD user at their first sign-in, using the email address stored in AD. In ADUC, open each staff user (and `emignardi`) → **General** tab → **E-mail:** `username@bayview.internal` (e.g. `schen@bayview.internal`)
+  - PowerShell alternative: `Get-ADUser -Filter * -SearchBase "OU=Users,OU=Bayview,DC=bayview,DC=internal" | ForEach-Object { Set-ADUser $_ -EmailAddress "$($_.SamAccountName)@bayview.internal" }`
+- [ ] Confirm **Admin Panel → Emails → Settings → Verify Email Addresses** is **unticked**. `bayview.internal` has no public mail records, so the check would reject every address.
 
 - [ ] Download the **LDAP / Active Directory authentication** plugin from the osTicket download page and save it as `plugins\auth-ldap.phar` (see `plugins/README.md`)
 - [ ] `docker compose restart osticket` → the logs show `plugins copied`
