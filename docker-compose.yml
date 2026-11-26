@@ -27,7 +27,9 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8080:80"
+      # Listen ONLY on the host's VMware lab adapter (VMnet8), not on home Wi-Fi.
+      # Browse to http://10.10.10.1:8080 from the host or the lab VMs.
+      - "${LAB_HOST_IP:?Set LAB_HOST_IP in .env}:8080:80"
     extra_hosts:
       # Lets the container find the domain controller by name (needed for the TLS certificate check)
       - "dc01.bayview.internal:${DC_IP:?Set DC_IP in .env}"

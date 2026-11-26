@@ -253,16 +253,17 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 ### 5.1 Start the stack (on the host, in this folder)
 
 - [ ] Make sure Docker Desktop is running
-- [ ] `copy .env.example .env`, then open `.env` and set two strong passwords plus `DC_IP=10.10.10.10`
+- [ ] `copy .env.example .env`, then open `.env` and set two strong passwords. Check `DC_IP=10.10.10.10` and `LAB_HOST_IP=10.10.10.1`.
 - [ ] `docker compose up -d --build`
   - The first run downloads `php:8.3-apache` and `mariadb:11.4` and builds the image (5–10 min)
 - ✔ `docker compose ps` shows `db` as **healthy** and `osticket` as **running**
 - ✔ `docker compose logs osticket` shows `entrypoint: new install, open .../setup/`
 - If the build fails, copy the **last 30 lines** of the output and ask Claude. Don't guess.
+- If it says **`cannot assign requested address`**: the VMnet8 adapter is missing or disabled. Check `ipconfig` shows `10.10.10.1` on "VMware Network Adapter VMnet8", then run `docker compose up -d` again.
 
 ### 5.2 Run the web installer
 
-- [ ] On the host, go to `http://localhost:8080/setup/`
+- [ ] On the host, go to `http://10.10.10.1:8080/setup/` (`localhost` won't work: osTicket only listens on the lab adapter, on purpose)
 - [ ] Prerequisites: all required items green (screenshot this)
 - [ ] System settings:
   - Helpdesk name `Bayview IT Help Desk` · default email `helpdesk@bayview.internal`
@@ -271,7 +272,8 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 - [ ] Install Now → "Congratulations"
 - [ ] `docker compose restart osticket`
 - ✔ The logs now show `osTicket installed, config locked, setup folder removed`
-- ✔ `http://localhost:8080/setup/` returns **Not Found**
+- ✔ `http://10.10.10.1:8080/setup/` returns **Not Found**
+- ✔ **Security check:** from your phone on home Wi-Fi, `http://<laptop's Wi-Fi IP>:8080` should **not** load
 - 📸 `p5-01-installer-prereqs.png` · `p5-02-install-complete.png`
 
 ### 5.3 Reach it from CLIENT01

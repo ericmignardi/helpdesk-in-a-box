@@ -51,7 +51,7 @@ flowchart LR
 |---|---|---|---|---|
 | DC01 | Domain controller, DNS, DHCP, file and print server, certificate authority | Windows Server 2025 Standard Evaluation (Desktop Experience) | 2 / 4 GB / 60 GB | 10.10.10.10 (static) |
 | CLIENT01 | Staff workstation | Windows 11 Enterprise Evaluation | 2 / 4 GB / 64 GB | DHCP (.100–.199) |
-| osTicket stack | Help desk | Docker Desktop on the host (`php:8.3-apache` + `mariadb:11.4`) | n/a | Host VMnet8 IP 10.10.10.1, port 8080 |
+| osTicket stack | Help desk | Docker Desktop on the host (`php:8.3-apache` + `mariadb:11.4`) | n/a | Host VMnet8 IP 10.10.10.1, port 8080 (bound to the lab adapter only) |
 
 **Virtualization:** VMware Workstation Pro on an ASUS TUF A15 (Ryzen 7 6800H, 16 GB RAM).
 
@@ -122,7 +122,7 @@ docker compose up -d --build
 docker compose logs -f osticket
 ```
 
-Then browse to `http://localhost:8080`. Full steps are in RUNBOOK.md, Phase 5.
+Then browse to `http://10.10.10.1:8080`. osTicket listens only on the host's VMware lab adapter, so it isn't exposed to the home network. Full steps are in RUNBOOK.md, Phase 5.
 
 ## Screenshots
 
