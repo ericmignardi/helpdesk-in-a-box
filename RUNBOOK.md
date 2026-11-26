@@ -304,23 +304,24 @@ DC01 4 GB + CLIENT01 4 GB + Docker Desktop about 2–3 GB, which leaves about 5 
 
 ### 6.1 Install AD Certificate Services (DC01, as `adm-emignardi`)
 
-- [ ] Add roles → **Active Directory Certificate Services** → role service **Certification Authority** → Install
-- [ ] Configure: **Enterprise CA** → **Root CA** → new private key → defaults (SHA256) → CA name `Bayview-Root-CA` → validity 5 years
-- [ ] Run `gpupdate /force` then `certutil -pulse` (asks the DC to enrol its own certificate). Reboot DC01.
+- [*] Add roles → **Active Directory Certificate Services** → role service **Certification Authority** → Install
+- [*] Configure → **Credentials: Change → `BAYVIEW\Administrator`**. An Enterprise CA needs **Enterprise Admins** rights, and `adm-emignardi` is only a Domain Admin. This is a legitimate one-off use of the built-in account.
+- [*] Then: **Enterprise CA** → **Root CA** → new private key → defaults (SHA256) → CA name `Bayview-Root-CA` → validity 5 years
+- [*] Run `gpupdate /force` then `certutil -pulse` (asks the DC to enrol its own certificate). Reboot DC01.
 - ✔ `certlm.msc` → Personal → Certificates contains a cert **issued to `DC01.bayview.internal`** by `Bayview-Root-CA` (template _Kerberos Authentication_ or _Domain Controller_)
 - ✔ Run `ldp.exe` → Connection → Connect → server `dc01.bayview.internal`, port **636**, **SSL** ticked → it connects without errors
 - 📸 `p6-01-dc-certificate.png` · `p6-02-ldp-636.png`
 
 ### 6.2 Give the root certificate to the osTicket container
 
-- [ ] On DC01 in PowerShell:
+- [*] On DC01 in PowerShell:
   ```powershell
   certutil -ca.cert C:\Bayview-Root-CA.cer
   certutil -encode C:\Bayview-Root-CA.cer C:\bayview-root-ca.crt
   notepad C:\bayview-root-ca.crt
   ```
-- [ ] Copy all the text (`-----BEGIN CERTIFICATE-----` to `-----END CERTIFICATE-----`) and paste it into a new file on the host: `certs\bayview-root-ca.crt`
-- [ ] `docker compose restart osticket`
+- [*] Copy all the text (`-----BEGIN CERTIFICATE-----` to `-----END CERTIFICATE-----`) and paste it into a new file on the host: `certs\bayview-root-ca.crt`
+- [*] `docker compose restart osticket`
 - ✔ The logs show `entrypoint: lab root certificate trusted`
 
 ### 6.3 Test the connection from the container _before_ touching osTicket
@@ -342,13 +343,13 @@ docker compose exec osticket ldapsearch -H ldap://dc01.bayview.internal -ZZ -x -
 
 ### 6.4 Install the LDAP plugin
 
-- [ ] **Prep: give every AD user an email address.** osTicket creates an account for each AD user at their first sign-in, using the email address stored in AD. In ADUC, open each staff user (and `emignardi`) → **General** tab → **E-mail:** `username@bayview.internal` (e.g. `schen@bayview.internal`)
+- [*] **Prep: give every AD user an email address.** osTicket creates an account for each AD user at their first sign-in, using the email address stored in AD. In ADUC, open each staff user (and `emignardi`) → **General** tab → **E-mail:** `username@bayview.internal` (e.g. `schen@bayview.internal`)
   - PowerShell alternative: `Get-ADUser -Filter * -SearchBase "OU=Users,OU=Bayview,DC=bayview,DC=internal" | ForEach-Object { Set-ADUser $_ -EmailAddress "$($_.SamAccountName)@bayview.internal" }`
-- [ ] Confirm **Admin Panel → Emails → Settings → Verify Email Addresses** is **unticked**. `bayview.internal` has no public mail records, so the check would reject every address.
+- [*] Confirm **Admin Panel → Emails → Settings → Verify Email Addresses** is **unticked**. `bayview.internal` has no public mail records, so the check would reject every address.
 
-- [ ] Download the **LDAP / Active Directory authentication** plugin from the osTicket download page and save it as `plugins\auth-ldap.phar` (see `plugins/README.md`)
-- [ ] `docker compose restart osticket` → the logs show `plugins copied`
-- [ ] Admin Panel → **Manage → Plugins → Add New Plugin** → install the LDAP plugin → open it → **Instances → Add New Instance**, name `Bayview AD`, status **Active**:
+- [*] Download the **LDAP / Active Directory authentication** plugin from the osTicket download page and save it as `plugins\auth-ldap.phar` (see `plugins/README.md`)
+- [*] `docker compose restart osticket` → the logs show `plugins copied`
+- [*] Admin Panel → **Manage → Plugins → Add New Plugin** → install the LDAP plugin → open it → **Instances → Add New Instance**, name `Bayview AD`, status **Active**:
   - Default Domain: `bayview.internal`
   - DNS Servers: _(leave blank)_
   - LDAP servers: `dc01.bayview.internal`
@@ -358,12 +359,12 @@ docker compose exec osticket ldapsearch -H ldap://dc01.bayview.internal -ZZ -x -
   - LDAP Schema: **Microsoft® Active Directory**
   - Staff Authentication ✓ · Client Authentication ✓
 - ✔ Saving shows **"LDAP configuration updated successfully"**
-- [ ] Admin Panel → **Agents → Add New Agent**: username `emignardi`, department IT Support, **authentication backend: LDAP**
+- [*] Admin Panel → **Agents → Agents → Add New Agent**: email `emignardi@bayview.internal`, username `emignardi`, **authentication backend: LDAP**, Access tab: department IT Support, role All Access. Leave it a normal agent; `ostadmin` stays the only admin (least privilege).
 - ✔ Log out of `ostadmin`. Log in to the **Staff Panel** as `emignardi` with your **AD password**.
 - ✔ On CLIENT01 as `schen`: open the portal → **Sign In** → `schen` + AD password → submit a ticket
 - 📸 `p6-04-plugin-config.png` (hide the password) · `p6-05-agent-ad-login.png` · `p6-06-user-ad-ticket.png`
-- [ ] Shut down both VMs → snapshot each (`DC01-lab-complete`, `CLIENT01-lab-complete`), deleting older ones to stay at 2 per VM
-- [ ] `git push`
+- [*] Shut down both VMs → snapshot each (`DC01-lab-complete`, `CLIENT01-lab-complete`), deleting older ones to stay at 2 per VM
+- [*] `git push`
 
 ---
 
