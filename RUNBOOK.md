@@ -383,13 +383,13 @@ Work through [TICKETS.md](TICKETS.md) in order. For **each** ticket:
 
 ## Phase 8: Wrap up · ~0.5 day
 
-- [ ] Replace the `10.10.10` placeholders in the README with your real lab values (they're private lab IPs, so they're safe to publish)
-- [ ] Add your best 8–12 screenshots to the README under **Screenshots**
-- [ ] Write **Lessons learned** (3–5 bullets: what broke, what surprised you, what you'd do differently)
-- [ ] Change the README status to ✅ Complete
-- [ ] Check snapshots: 2 per VM max. Keep `*-lab-complete`, because Idea 3 runs on this lab.
-- [ ] Final `git push`, then **pin the repo** on your GitHub profile
-- [ ] Tell Claude "Idea 1 is finished" → get final resume bullets + the profile update
+- [*] Replace the `10.10.10` placeholders in the README with your real lab values (they're private lab IPs, so they're safe to publish)
+- [*] Add your best 8–12 screenshots to the README under **Screenshots**
+- [*] Write **Lessons learned** (3–5 bullets: what broke, what surprised you, what you'd do differently)
+- [*] Change the README status to ✅ Complete
+- [*] Check snapshots: 2 per VM max. Keep `*-lab-complete`, because Idea 3 runs on this lab.
+- [*] Final `git push`, then **pin the repo** on your GitHub profile
+- [*] Tell Claude "Idea 1 is finished" → get final resume bullets + the profile update
 
 ---
 
