@@ -372,12 +372,12 @@ docker compose exec osticket ldapsearch -H ldap://dc01.bayview.internal -ZZ -x -
 
 Work through [TICKETS.md](TICKETS.md) in order. For **each** ticket:
 
-- [ ] **Set up the problem** using the "Lab setup" steps (as admin, on DC01 or CLIENT01)
-- [ ] **Log in as the affected user** on CLIENT01 and **submit the ticket through the portal** in their words, with the right help topic
-- [ ] **Work it as `emignardi`** in the Staff Panel: assign it to yourself, add **internal notes** as you troubleshoot, reply to the user, and **close** it with a resolution
-- [ ] **Fill in the write-up** in TICKETS.md (try first, _then_ open the hint)
+- [*] **Set up the problem** using the "Lab setup" steps (as admin, on DC01 or CLIENT01)
+- [*] **Log in as the affected user** on CLIENT01 and **submit the ticket through the portal** in their words, with the right help topic
+- [*] **Work it as `emignardi`** in the Staff Panel: assign it to yourself, add **internal notes** as you troubleshoot, reply to the user, and **close** it with a resolution
+- [*] **Fill in the write-up** in TICKETS.md (try first, _then_ open the hint)
 - 📸 At least 2 per ticket: the evidence of the problem and the proof it's fixed (ticket thread or command output)
-- [ ] Push after every 2–3 tickets
+- [*] Push after every 2–3 tickets
 
 ---
 
