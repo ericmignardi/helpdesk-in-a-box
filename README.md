@@ -2,7 +2,7 @@
 
 A help desk home lab for a fictional 25-person Hamilton manufacturer. It has a Windows Server 2025 domain, a Windows 11 workstation and an osTicket help desk that staff sign in to with their Active Directory accounts. I worked through realistic support tickets in it and documented each one from report to resolution.
 
-> **Status:** 🚧 In progress. Phases and checkboxes are in [RUNBOOK.md](RUNBOOK.md).
+> **Status:** ✅ Complete (November 2026). The build steps are in [RUNBOOK.md](RUNBOOK.md) and the ticket write-ups are in [TICKETS.md](TICKETS.md).
 > **Lab, not production:** this is home-lab practice on evaluation licences, not a workplace environment.
 
 ---
@@ -74,7 +74,7 @@ bayview.internal
     └── Disabled Users
 ```
 
-- **Security groups:** `GG-Office`, `GG-Production`, `GG-Shipping`, `GG-Management`, `GG-IT`
+- **Security groups:** `GG-Office`, `GG-Production`, `GG-Shipping`, `GG-Management`, `GG-IT`, plus `GG-Contracts-Read` (read-only vendor contracts, added in BAY-005)
 - **Admin model:** `emignardi` is my everyday account. `adm-emignardi` is a separate Domain Admin account used only for admin work.
 - **Service account:** `svc-osticket` is a standard user that osTicket uses only to search the directory.
 
@@ -83,7 +83,7 @@ bayview.internal
 | GPO | Linked to | Does |
 |---|---|---|
 | Default Domain Policy (edited) | Domain | 12-character complex passwords, lockout after 5 bad attempts for 15 minutes |
-| BAY-U-DriveMaps | Bayview\Users | S: → `\\DC01\Company`, M: → `\\DC01\Company\Management` (Management only) |
+| BAY-U-DriveMaps | Bayview\Users | S: → `\\DC01\Company`, M: → `\\DC01\Company\Management` (GG-Management only), V: → `Management\Vendor Contracts` (GG-Contracts-Read only) |
 | BAY-U-Printers | Bayview\Users | Deploys `\\DC01\Office-Copier` to the Office and Management groups |
 | BAY-U-Desktop | Bayview\Users | Screen locks after 10 minutes |
 | BAY-C-Software | Bayview\Computers\Workstations | Installs 7-Zip (MSI) at startup |
@@ -108,15 +108,16 @@ Full write-ups are in [TICKETS.md](TICKETS.md).
 | BAY-004 | "My S: drive is gone" | GPO scope, OU placement, `gpresult` |
 | BAY-005 | Access denied: Management folder | Least privilege, approvals, NTFS and group membership |
 | BAY-006 | Printer missing | GPO printer deployment, group targeting |
-| BAY-007 | Print jobs stuck in queue | Print spooler, queue management, escalation |
+| BAY-007 | Print jobs stuck in queue | Print queue, `Test-NetConnection` on port 9100, vendor escalation with a workaround |
 | BAY-008 | Software request: 7-Zip | GPO software installation |
 | BAY-009 | "Internet works but nothing else does" | DNS, `ipconfig`, `nslookup` |
-| BAY-010 | Nobody can sign in to the help desk | LDAP, service accounts, `ldapsearch`, Security log |
+| BAY-010 | Nobody can sign in to the help desk | Break-glass account, `ldapsearch`, AD error codes (52e/533), Event ID 4725 |
+| BAY-012 | *Open follow-up:* printer won't deploy for one user | Found during BAY-007; next diagnostic steps documented |
 
 ## Running the osTicket stack
 
 ```powershell
-copy .env.example .env      # then edit the passwords and DC_IP
+copy .env.example .env      # then set the passwords, DC_IP and LAB_HOST_IP
 # put auth-ldap.phar in plugins\ and the lab root CA in certs\ (see the README in each folder)
 docker compose up -d --build
 docker compose logs -f osticket
@@ -126,11 +127,50 @@ Then browse to `http://10.10.10.1:8080`. osTicket listens only on the host's VMw
 
 ## Screenshots
 
-_Added as the lab is built. See `screenshots/`._
+A selection is below. All 64 are in [`screenshots/`](screenshots/), named by phase and ticket.
+
+**Active Directory OU design**
+![OU structure](screenshots/p2-03-ou-structure.png)
+
+**Least-privilege NTFS permissions on the Management folder**
+![NTFS permissions](screenshots/p4-01-ntfs-management.png)
+
+**Secure LDAP (port 636) working after setting up the certificate authority**
+![ldp on 636](screenshots/p6-02-ldp-636.png)
+
+**Proving the container-to-DC connection with `ldapsearch` before configuring osTicket**
+![ldapsearch success](screenshots/p6-03-ldapsearch-success.png)
+
+**An employee's ticket, submitted after signing in with their AD account**
+![AD user ticket](screenshots/p6-06-user-ad-ticket.png)
+
+**BAY-003: finding the lockout source with Event ID 4740**
+![Event 4740](screenshots/p7-bay003-03-event-4740.png)
+
+**BAY-004: `gpresult` showing the user outside the GPO's OU**
+![gpresult](screenshots/p7-bay004-02-gpresult.png)
+
+**BAY-005: checking Effective Access before telling the user**
+![Effective access](screenshots/p7-bay005-02-effective-access.png)
+
+**BAY-009: diagnosing DNS with `ipconfig` and `nslookup`**
+![DNS diagnosis](screenshots/p7-bay009-02-diagnosis.png)
+
+**BAY-010: AD error code 533 (account disabled) from the service account bind**
+![ldapsearch 533](screenshots/p7-bay010-02-ldapsearch-533.png)
 
 ## Lessons learned
 
-_Filled in at the end of the project._
+- **Error messages can mislead.** Changing my admin account's password failed with a "length, complexity, or history" error even with strong passwords. The real cause was the **minimum password age** (1 day), and an admin reset in ADUC bypasses it.
+- **Server 2025 requires LDAP signing by default.** A plain LDAP sign-in from osTicket would be rejected, so instead of weakening the DC, I set up an enterprise CA and used StartTLS. Testing with `ldapsearch -ZZ` from inside the container *before* configuring the app proved the network, certificate and service account in one step.
+- **Remembered drive maps can hide a GPO problem.** After moving a user out of the GPO's OU, his S: drive was still there because Windows had saved the mapping in his profile. Ticking **"Remove this item when it is no longer applied"** on GPO drive maps prevents that.
+- **One cause can produce several symptoms.** The same misplaced account broke both the drive map and the help desk sign-in, because the LDAP plugin only searches the `Bayview` OU.
+- **Access changes don't affect a session that's already open.** Group membership is read at sign-in, and cached connections and Kerberos tickets can keep old access working. Removing access, especially for someone leaving, also means signing them out or disabling the account.
+- **AD only reveals account restrictions after a correct password.** A mistyped password gives `52e` whatever the account's state; only with the right password did I get `533` (disabled).
+- **Wrong DNS often looks like a partial outage.** Short names still worked through the DNS cache and NetBIOS/LLMNR fallback, while full names and Group Policy failed. "Internet works but internal things don't" → check DNS first.
+- **Resolve tickets only after testing.** On my first ticket I set Resolved before verifying. Afterwards I kept tickets open, recorded checks as internal notes, and resolved with the final reply.
+- **SLA clocks follow business hours and holidays.** A 4-hour ticket logged on U.S. Thanksgiving was due the next day, because osTicket's default schedule uses U.S. holidays. A Hamilton company would need an Ontario holiday schedule.
+- **Know when to open a separate ticket.** When the copier wouldn't deploy for one user, I ran BAY-007 with another user and logged the deployment problem as its own follow-up (BAY-012), instead of letting it block the ticket.
 
 ## Limitations and honest notes
 
@@ -138,7 +178,11 @@ _Filled in at the end of the project._
 - **One server does everything.** DC01 is also the file server, print server and certificate authority. In production these would be separate servers; a CA on a domain controller in particular is a lab shortcut.
 - **No email intake:** osTicket can create tickets from email, but that needs a real mailbox. Tickets here come in through the web portal.
 - **Simulated printer:** the "Office-Copier" queue points to an IP with no device behind it, so jobs queue but never print. That's deliberate for BAY-007.
-- **AI assistance:** the Docker configuration and these docs were drafted with AI assistance (Claude) and reviewed by me. All the server, AD, GPO and osTicket configuration was done by hand, following my runbook.
+- **Docker hides the client's IP:** osTicket logs every request as coming from Docker's internal gateway (`172.18.0.1`) instead of the real workstation IP, because of Docker Desktop's port forwarding.
+- **SLA schedule left at osTicket's default** (business hours with U.S. holidays); see Lessons learned.
+- **No outgoing email:** osTicket has no SMTP relay in the lab, so notifications fail (logged as "Mailer Error"). In production I'd configure SMTP (for example Microsoft 365) before go-live.
+- **Open item:** BAY-012 (printer deployment failing for one user) is documented with next steps but not yet resolved.
+- **AI assistance:** the Docker configuration and the documentation (README, runbook and ticket write-ups, based on my notes and results) were drafted with AI assistance (Claude) and reviewed by me. All the server, AD, GPO and osTicket configuration was done by hand, following my runbook.
 
 ## Repo structure
 
